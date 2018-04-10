@@ -1,4 +1,4 @@
-/*
+package com.finalandroidresizer;/*
  *
  
  Copyright (c) 2014, Sebastian Breit
@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import com.finalandroidresizer.gif.GifUtil;
 import com.mortennobel.imagescaling.AdvancedResizeOp;
 import com.mortennobel.imagescaling.ResampleFilters;
 import com.mortennobel.imagescaling.ResampleOp;
@@ -58,18 +59,23 @@ public class ImageProcessor {
 		}
 		
 		destFile.getParentFile().mkdirs();
-		
+
 		BufferedImage image = ImageIO.read(f);
-		
-		int size=getRequiredSize(originalSize,resFolder,image.getWidth());
 
-		ResampleOp resampleOp = new ResampleOp(size, (size * image.getHeight())
-				/ image.getWidth());
-		resampleOp.setFilter(ResampleFilters.getLanczos3Filter());
-		resampleOp.setUnsharpenMask(AdvancedResizeOp.UnsharpenMask.None);
-		image = resampleOp.filter(image, null);
+		int size = getRequiredSize(originalSize, resFolder, image.getWidth());
 
-		ImageIO.write(image, getExtension(f.getName()), destFile);
+		if (f.getAbsolutePath().endsWith(".gif")) {
+			GifUtil.gifInputToOutput(f, destFile, size, (size * image.getHeight() / image.getWidth()));
+		} else {
+
+			ResampleOp resampleOp = new ResampleOp(size, (size * image.getHeight())
+					/ image.getWidth());
+			resampleOp.setFilter(ResampleFilters.getLanczos3Filter());
+			resampleOp.setUnsharpenMask(AdvancedResizeOp.UnsharpenMask.None);
+			image = resampleOp.filter(image, null);
+
+			ImageIO.write(image, getExtension(f.getName()), destFile);
+		}
 	}
 
 	private static int getRequiredSize(String originalSize, String resFolder,

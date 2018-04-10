@@ -1,4 +1,4 @@
-
+package com.finalandroidresizer;
 /*
  *
  
@@ -108,6 +108,7 @@ public class ResizerFrame extends JFrame {
         if (resFile != null) {
             lblNoDirectorySelected.setText(resFile.getAbsolutePath());
         }
+        pack();
     }
 
     /**
@@ -372,7 +373,6 @@ public class ResizerFrame extends JFrame {
 
                     }
                 });
-
     }
 
     private Vector<String> getExportFolders() {
