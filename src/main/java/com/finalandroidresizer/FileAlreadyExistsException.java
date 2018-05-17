@@ -1,4 +1,4 @@
-/*
+package com.finalandroidresizer;/*
  *
  
  Copyright (c) 2014, Sebastian Breit
