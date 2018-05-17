@@ -29,9 +29,10 @@ import com.finalandroidresizer.gif.GifUtil;
 import com.mortennobel.imagescaling.AdvancedResizeOp;
 import com.mortennobel.imagescaling.ResampleFilters;
 import com.mortennobel.imagescaling.ResampleOp;
+import org.apache.commons.io.FilenameUtils;
 
 public class ImageProcessor {
-	
+
 	private static final float LDPI_RATIO=3;
 	private static final float MDPI_RATIO=4;
 	private static final float TVDPI_RATIO=5.33333333f;
@@ -39,32 +40,106 @@ public class ImageProcessor {
 	private static final float XHDPI_RATIO=8;
 	private static final float XXHDPI_RATIO=12;
 	private static final float XXXHDPI_RATIO=16;
+
+	public enum Devices {
+		ANDROID, IOS
+	}
+
+	public enum Sizes {
+
+		AT1X("1x", MDPI_RATIO, Devices.IOS),
+		AT2X("2x", XHDPI_RATIO, Devices.IOS),
+		AT3x("3x", XXHDPI_RATIO, Devices.IOS),
+		LDPI("ldpi", LDPI_RATIO, Devices.ANDROID),
+		MDPI("mdpi", MDPI_RATIO, Devices.ANDROID),
+		TVDPI("tvdpi", TVDPI_RATIO, Devices.ANDROID),
+		HDPI("hdpi", HDPI_RATIO, Devices.ANDROID),
+		XHDPI("xhdpi", XHDPI_RATIO, Devices.ANDROID),
+		XXHDPI("xxhdpi", XXHDPI_RATIO, Devices.ANDROID),
+		XXXHDPI("xxxhdpi", XXXHDPI_RATIO, Devices.ANDROID);
+
+		private final String size;
+		private final float ratio;
+		private final Devices device;
+
+		Sizes(String size, float ratio, Devices device) {
+			this.size = size;
+			this.ratio = ratio;
+			this.device = device;
+		}
+
+		public String getSize() {
+			return size;
+		}
+
+		public boolean isIOS() {
+			return device.equals(Devices.IOS);
+		}
+
+		public boolean isAndroid() {
+			return device.equals(Devices.ANDROID);
+		}
+
+		public Devices getDevice() {
+			return device;
+		}
+
+		@Override
+		public String toString() {
+			return size;
+		}
+	}
 	
 
-	public static void processImage(File f, File resDirectory, String originalSize, String drawableDirectory, boolean overwrite,
-			String resFolder) throws FileAlreadyExistsException, IOException, NullPointerException {
+	public static File processImage(File f, File resDirectory, Sizes originalSize, String drawableDirectory, boolean overwrite,
+			Sizes destSize) throws FileAlreadyExistsException, IOException, NullPointerException {
 
-		String finalPath = "";
+		if (destSize.isIOS()) {
+			return processIOSImage(f, resDirectory, originalSize, overwrite, destSize);
+		} else {
+			return processAndroidImage(f, resDirectory, originalSize, drawableDirectory, overwrite, destSize);
+		}
+	}
+
+	private static File processAndroidImage(File f, File resDirectory, Sizes originalSize, String drawableDirectory, boolean overwrite,
+											Sizes destSize) throws FileAlreadyExistsException, IOException, NullPointerException {
+
+		String finalPath;
 
 		if(drawableDirectory.equalsIgnoreCase("mipmap")) {
-			finalPath = resDirectory.getAbsolutePath() + "/mipmap-" + resFolder + "/" + f.getName();
+			finalPath = resDirectory.getAbsolutePath() + "/mipmap-" + destSize.size + "/" + f.getName();
 		}else{
-			finalPath = resDirectory.getAbsolutePath() + "/drawable-" + resFolder + "/" + f.getName();
+			finalPath = resDirectory.getAbsolutePath() + "/drawable-" + destSize.size + "/" + f.getName();
 		}
-		
+
+		return writeScaledImage(f, finalPath, originalSize, overwrite, destSize);
+	}
+
+	private static File processIOSImage(File f, File resDirectory, Sizes originalSize, boolean overwrite,
+											Sizes destSize) throws FileAlreadyExistsException, IOException, NullPointerException {
+
+		String fileName = FilenameUtils.getBaseName(f.getName());
+
+		String finalPath = resDirectory.getAbsolutePath() + "/" + fileName + ".imageset/" + fileName + "@" + destSize.size + "." + FilenameUtils.getExtension(f.getName());
+
+		return writeScaledImage(f, finalPath, originalSize, overwrite, destSize);
+	}
+
+	private static File writeScaledImage(File f, String finalPath, Sizes originalSize, boolean overwrite,
+										 Sizes destSize) throws FileAlreadyExistsException, IOException, NullPointerException {
 		File destFile=new File(finalPath);
 		if(!overwrite) {
 			if (destFile.exists())
 				throw new FileAlreadyExistsException();
 		}
-		
+
 		destFile.getParentFile().mkdirs();
 
 		BufferedImage image = ImageIO.read(f);
 
-		int size = getRequiredSize(originalSize, resFolder, image.getWidth());
+		int size = getRequiredSize(originalSize, destSize, image.getWidth());
 
-		if (f.getAbsolutePath().endsWith(".gif")) {
+		if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase("gif")) {
 			GifUtil.gifInputToOutput(f, destFile, size, (size * image.getHeight() / image.getWidth()));
 		} else {
 
@@ -74,57 +149,16 @@ public class ImageProcessor {
 			resampleOp.setUnsharpenMask(AdvancedResizeOp.UnsharpenMask.None);
 			image = resampleOp.filter(image, null);
 
-			ImageIO.write(image, getExtension(f.getName()), destFile);
+			ImageIO.write(image, FilenameUtils.getExtension(f.getName()), destFile);
 		}
+
+		return destFile;
 	}
 
-	private static int getRequiredSize(String originalSize, String resFolder,
+	private static int getRequiredSize(Sizes originalSize, Sizes destSize,
 			int width) {
-		float destRatio=1;
-		if(resFolder.equalsIgnoreCase("ldpi")) {
-			destRatio = LDPI_RATIO;
-		}else if(resFolder.equalsIgnoreCase("mdpi")) {
-			destRatio = MDPI_RATIO;
-		}else if(resFolder.equalsIgnoreCase("tvdpi")) {
-			destRatio = TVDPI_RATIO;
-		}else if(resFolder.equalsIgnoreCase("hdpi")) {
-			destRatio = HDPI_RATIO;
-		}else if(resFolder.equalsIgnoreCase("xhdpi")) {
-			destRatio = XHDPI_RATIO;
-		}else if(resFolder.equalsIgnoreCase("xxhdpi")) {
-			destRatio = XXHDPI_RATIO;
-		}else if(resFolder.equalsIgnoreCase("xxxhdpi")) {
-			destRatio = XXXHDPI_RATIO;
-		}
 
-		float origRatio=1;
-		if(originalSize.equalsIgnoreCase("ldpi")) {
-			origRatio = LDPI_RATIO;
-		}else if(originalSize.equalsIgnoreCase("mdpi")) {
-			origRatio = MDPI_RATIO;
-		}else if(originalSize.equalsIgnoreCase("tvdpi")) {
-			origRatio = TVDPI_RATIO;
-		}else if(originalSize.equalsIgnoreCase("hdpi")) {
-			origRatio = HDPI_RATIO;
-		}else if(originalSize.equalsIgnoreCase("xhdpi")) {
-			origRatio = XHDPI_RATIO;
-		}else if(originalSize.equalsIgnoreCase("xxhdpi")) {
-			origRatio = XXHDPI_RATIO;
-		}else if(originalSize.equalsIgnoreCase("xxxhdpi")) {
-			origRatio = XXXHDPI_RATIO;
-		}
-
-		return Math.round(((float)width)*destRatio/origRatio);
-	}
-
-	private static String getExtension(String f) {
-		String extension = "";
-
-		int i = f.lastIndexOf('.');
-		if (i > 0) {
-		    extension = f.substring(i+1);
-		}
-		return extension;
+		return Math.round(((float) width) * destSize.ratio / originalSize.ratio);
 	}
 
 }
