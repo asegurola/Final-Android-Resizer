@@ -25,6 +25,9 @@ jar {
     }
 }
 
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation group: 'com.mortennobel', name: 'java-image-scaling', version: '0.8.6'
