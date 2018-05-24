@@ -35,7 +35,7 @@ dependencies {
     implementation group: 'com.jhlabs', name: 'filters', version: '2.0.235-1'
     implementation group: 'com.madgag', name: 'animated-gif-lib', version: '1.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'org.json', name: 'json', version: '20180130'
+    implementation group: 'org.json', name: 'json', version: '20180130'
 
     testImplementation group: 'junit', name: 'junit', version: '4.11'
 }
