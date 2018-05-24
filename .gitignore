@@ -3,3 +3,5 @@ out/
 .idea/
 .settings/
 resizer.properties
+.gradle/
+build/
