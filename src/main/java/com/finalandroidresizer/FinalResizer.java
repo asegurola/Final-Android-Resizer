@@ -20,9 +20,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 public class FinalResizer {
 
-	private static void createAndShowGUI() {
+	private static void createAndShowGUI(String[] args) {
         //Create and set up the window.
-        ResizerFrame frame=new ResizerFrame();
+        ResizerFrame frame = new ResizerFrame(args);
         //Display the window.
         frame.pack();
         frame.setVisible(true);
@@ -31,11 +31,7 @@ public class FinalResizer {
     public static void main(String[] args) {
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
+        javax.swing.SwingUtilities.invokeLater(() -> createAndShowGUI(args));
     }
 	
 }
