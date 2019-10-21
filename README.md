@@ -24,9 +24,6 @@ With **Final Android Resizer** you are able to:
 
 I have not tried resizing 9patch images yet.
 
-If you just want to download the executable jar, click <b><a href="Executable%20Jar/Final%20Android%20Resizer-all.jar?raw=true">here</a></b>
-
-
 If you love this tool and want to contribute with the developer, please consider donating!
 
 <a href='https://pledgie.com/campaigns/23760'><img alt='Click here to lend your support to: Final Android Resizer and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/23760.png?skin_name=chrome' border='0' ></a>
